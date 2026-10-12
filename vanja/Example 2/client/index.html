@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Example 2</title>
+    <script src="stomp.min.js"></script>
+    <script src="query.js"></script>
+</head>
+
+<body>
+    <h1>InfluxDB query examples</h1>
+
+    <p>Select for which measurement you want to fetch data:</p>
+    <form onsubmit="event.preventDefault();">
+        <select name="measurements" id="measurements">
+            <option value="Temperature">Temperature</option>
+            <option value="Irradiance">Irradiance</option>
+            <option value="Humidity">Humidity</option>
+            <option value="Precipitation">Precipitation</option>
+        </select>
+        <br>
+
+        <p>Chooose type of fetched data:</p>
+        <input type="radio" id="10" name="type" value="10" checked>
+        <label for="html">Last 10 values</label><br>
+        <input type="radio" id="last" name="type" value="last">
+        <label for="last">Last value</label><br>
+        <input type="radio" id="aggregated" name="type" value="aggregated">
+        <label for="aggregated">Aggregated data</label><br>
+        <input type="radio" id="deviation" name="type" value="deviation">
+        <label for="aggregated">Deviation from mean value</label>
+        <br><br>
+
+        <button onclick="fetchData()">Fetch</button>
+        <br>
+    </form>
+
+    <p>Click the "Fetch" button and it will be changed what kind of data is fetched. When button is clicked, WebSocket connection is established and data is periodically sent from server to client.</p><br>
+
+    <div id="data"></div>
+
+</body>
+</html>
