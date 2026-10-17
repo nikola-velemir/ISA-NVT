@@ -116,6 +116,14 @@ hs_err_pid*
 # ==========================================
 # Dependency directories
 node_modules/
+**/node_modules/**
+
+**/node_modules/
+
+**/node_modules/*
+*/node_modules/
+*/node_modules/*
+*/node_modules/**
 .pnpm-store/
 
 # Angular build outputs and caches
