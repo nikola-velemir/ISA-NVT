@@ -1,12 +1,12 @@
-package isa.vezbe1.springapp.controller;
+package isa.vezbe1.spring_boot_example.controller;
 
-import java.util.List;
-
+import isa.vezbe1.spring_boot_example.model.Asset;
+import isa.vezbe1.spring_boot_example.service.AssetService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 
-import isa.vezbe1.springapp.domain.Asset;
-import isa.vezbe1.springapp.service.AssetService;
+import java.util.List;
 
 /*
  * Klasa je anotirana sa @Controller sto treba da naznaci Springu da je klasa
@@ -15,10 +15,11 @@ import isa.vezbe1.springapp.service.AssetService;
  * nadanotacija za @Controller.
  */
 @Controller
-public class AssetController {
+public class AssetControllerFieldDI {
 
 	//field-based dependency injection
 	@Autowired
+	@Qualifier("firstService")
 	private AssetService assetService;
 
 	public List<Asset> getAssets(){

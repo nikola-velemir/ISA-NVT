@@ -1,11 +1,7 @@
-package isa.vezbe1.springapp.config;
+package isa.vezbe1.spring_boot_example.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
-import isa.vezbe1.springapp.service.AssetService;
-import isa.vezbe1.springapp.service.AssetServiceImpl;
 
 @Configuration
 /*
@@ -18,7 +14,7 @@ import isa.vezbe1.springapp.service.AssetServiceImpl;
  * Svi bean-ovi koji ce biti automatski prepoznati od strane Spring kontejnera
  * moraju da se nalaze u podpaketima source direktorijuma, na bilo kojoj dubini.
  */
-@ComponentScan(value = { "isa.vezbe1.springapp" })
+@ComponentScan(value = { "isa.vezbe1.spring_boot_example" })
 public class AppConfiguration {
 
 	/*
