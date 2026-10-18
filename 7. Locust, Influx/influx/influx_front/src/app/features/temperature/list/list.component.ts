@@ -33,8 +33,9 @@ export class ListComponent {
   readonly views = [
     { label: 'Table', value: 'table' },
     { label: 'Graph', value: 'graph' },
+        { label: 'Grafana', value: 'grafana' },
   ] as const;
-  readonly view = signal<'table' | 'graph'>('table');
+  readonly view = signal<'table' | 'graph' | 'grafana'>('table');
 
   private readings = signal<Temperature.ForGet[]>([]);
 
