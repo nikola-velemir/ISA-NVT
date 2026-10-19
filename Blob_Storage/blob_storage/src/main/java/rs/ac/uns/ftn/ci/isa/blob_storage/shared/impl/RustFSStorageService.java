@@ -1,0 +1,89 @@
+package rs.ac.uns.ftn.ci.isa.blob_storage.shared.impl;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import rs.ac.uns.ftn.ci.isa.blob_storage.shared.StorageService;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+
+import java.io.IOException;
+import java.time.Duration;
+
+@Service
+public class RustFSStorageService implements StorageService {
+
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
+
+    @Value("${rustfs.s3.bucket-name}")
+    private String bucketName;
+
+    public RustFSStorageService(S3Client s3Client, S3Presigner s3Presigner) {
+        this.s3Client = s3Client;
+        this.s3Presigner = s3Presigner;
+    }
+
+    @Override
+    public void uploadFile(String keyName, MultipartFile file) throws IOException {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+//                .contentType(file.getContentType())
+                .build();
+
+        s3Client.putObject(putObjectRequest,
+                RequestBody.fromBytes(file.getBytes()));
+    }
+    @Override
+    public String generatePutUrl(String keyName) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+//                .contentType("image/jpeg") // <-- Must match what you send in curl!
+                .build();
+
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10)) // URL valid for 10 minutes
+                .putObjectRequest(putObjectRequest)
+                .build();
+
+        PresignedPutObjectRequest presignedPutObject = s3Presigner.presignPutObject(presignRequest);
+        return presignedPutObject.url().toString();
+    }
+
+    @Override
+    public String generateGetUrl(String keyName) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+                .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10)) // URL valid for 10 minutes
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        PresignedGetObjectRequest presignedGetObject = s3Presigner.presignGetObject(presignRequest);
+        return presignedGetObject.url().toString();
+    }
+
+    @Override
+    public ResponseInputStream<GetObjectResponse> downloadFile(String keyName) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+                .build();
+
+        return s3Client.getObject(getObjectRequest);
+    }
+}
