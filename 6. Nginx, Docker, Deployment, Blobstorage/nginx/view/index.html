@@ -54,23 +54,28 @@
 
         function loadCars() {
             const response = fetch('/carsapi/cars').then(response => {
-                response.json().then(products => {
-
+                response.json().then(cars => {
                     document.getElementById("productsContainer").style.display = "none";
-                    document.getElementById("carsContainer").style.display = "block";
+                    const carsContainer = document.getElementById("carsContainer")
+                    carsContainer.style.display = "block";
+
+                    const carsTitle = document.getElementById("carsTitle")
+                    carsTitle.innerHTML = "Cars, from server: " + cars[0]["serverName"]
 
                     const tableBody = document.querySelector('#carsTable tbody');
                     tableBody.innerHTML = '';
 
-                    products.forEach(product => {
+                    cars.forEach(car => {
                         const row = document.createElement('tr');
 
                         row.innerHTML = `
-                                <td>${product.id}</td>
-                                <td>${product.make}</td>
-                                <td>${product.model}</td>
-                                <td>${product.year}</td>
-                                <td>${product.price}</td>
+                                <td>${car.id}</td>
+                                <td>${car.make}</td>
+                                <td>${car.model}</td>
+                                <td>${car.year}</td>
+                                <td>${car.price}</td>
+
+                                <td>${car.serverName}</td>
                             `;
                         tableBody.appendChild(row);
                     });
@@ -105,7 +110,7 @@
         </table>
     </div>
     <div id="carsContainer" style="display: none;">
-        <h1>Cars</h1>
+        <h1 id="carsTitle">Cars</h1>
         <table id="carsTable">
             <thead>
                 <tr>
@@ -114,6 +119,7 @@
                     <th>Model</th>
                     <th>Year</th>
                     <th>Price</th>
+                    <th>Server</th>
                 </tr>
             </thead>
             <tbody>
