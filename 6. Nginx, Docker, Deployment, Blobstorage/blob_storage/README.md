@@ -59,7 +59,7 @@ Potom da bi smo se navigirali na admin konzolu, u pretrazivacu cemo pristupiti a
 http://localhost:9001
 ```
 
-Ovde cemo putem grafickog interfejsa krerati bucket po imenu `my-test-bucket`. Ovime je zavrsena konfiguracija servisa.
+Ovde mozemo putem grafickog interfejsa krerati bucket-e u kojima ce se nalaziti nase datoteke. Primer ce kreirati bucket pod imenom `my-test-bucket` prilikom pozivanja `docker compose up`.
 
 ### Demonstracija
 

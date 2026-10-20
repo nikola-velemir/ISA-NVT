@@ -18,7 +18,21 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
+  rustfs-init:
+    image: amazon/aws-cli:latest
+    environment:
+      - AWS_ACCESS_KEY_ID=adminadmin
+      - AWS_SECRET_ACCESS_KEY=adminadmin
+      - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+      echo 'Creating bucket using AWS CLI...';
+      aws --endpoint-url http://rustfs:9000 s3 mb s3://my-test-bucket || true;
+      echo 'Bucket setup complete.';
+      "
 volumes:
   rustfs_data:
   rustfs_logs:
