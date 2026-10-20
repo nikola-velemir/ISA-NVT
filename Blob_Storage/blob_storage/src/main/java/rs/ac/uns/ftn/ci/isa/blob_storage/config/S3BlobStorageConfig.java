@@ -62,6 +62,7 @@ public class S3BlobStorageConfig {
 
     /**
      * Vrca "potpisivac" definisan putem S3, sluzi za generisanje presigned url-ova.
+     *
      * @return instanca {@link S3Presigner}
      */
     @Bean
@@ -73,7 +74,7 @@ public class S3BlobStorageConfig {
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .serviceConfiguration(S3Configuration.builder()
-                        .pathStyleAccessEnabled(true) // Required for RustFS
+                        .pathStyleAccessEnabled(true) // Obavezno za skladista koja su nalik S3, npr RustFS
                         .build())
                 .build();
     }

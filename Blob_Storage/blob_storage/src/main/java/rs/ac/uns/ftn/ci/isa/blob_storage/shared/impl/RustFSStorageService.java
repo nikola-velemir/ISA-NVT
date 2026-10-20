@@ -57,7 +57,7 @@ public class RustFSStorageService implements StorageService {
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10)) // URL je valida 10 min, ovo je konfigurabilno putem application.properties
+                .signatureDuration(Duration.ofMinutes(10)) // URL je validan 10 min, ovo je konfigurabilno putem application.properties
                 .putObjectRequest(putObjectRequest)
                 .build();
 
@@ -73,7 +73,7 @@ public class RustFSStorageService implements StorageService {
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10)) // URL valid for 10 minutes
+                .signatureDuration(Duration.ofMinutes(10)) // URL je validan 10 minuta
                 .getObjectRequest(getObjectRequest)
                 .build();
 
