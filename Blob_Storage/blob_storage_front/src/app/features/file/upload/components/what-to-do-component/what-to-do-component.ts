@@ -2,35 +2,40 @@ import { HttpClient } from '@angular/common/http';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { map, Subscription, switchMap } from 'rxjs';
 import { ImageService } from '../../../../../core/services/image.service';
+import { Image } from '../../../../../core/models/image.model';
 
-interface Result {
-  name: string;
-  url: string;
-}
+
+
 
 @Component({
   selector: 'app-what-to-do',
   templateUrl: './what-to-do-component.html',
-  standalone: true
+  standalone: true,
 })
 export class WhatToDoComponent {
   private readonly http = inject(HttpClient);
   private readonly service = inject(ImageService);
-  private sub?: Subscription;
+  private uploadSub?: Subscription;
+  private downloadSub?: Subscription;
 
   readonly dragging = signal(false);
   readonly uploading = signal(false);
+  readonly downloading = signal(false);
   readonly error = signal('');
-  readonly result = signal<Result | null>(null);
+  readonly uploaded = signal<WhatToDoComponent.Uploaded | null>(null);
+  readonly result = signal<Image.URL.ForGet | null>(null);
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.sub?.unsubscribe());
+    inject(DestroyRef).onDestroy(() => {
+      this.uploadSub?.unsubscribe();
+      this.downloadSub?.unsubscribe();
+    });
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.handleFile(input.files?.[0]);
-    input.value = ''; // allow re-selecting the same file
+    input.value = ''; // dozvoli da se odabere isti file.
   }
 
   onDragOver(event: DragEvent): void {
@@ -44,11 +49,39 @@ export class WhatToDoComponent {
     this.handleFile(event.dataTransfer?.files?.[0]);
   }
 
+  // Prilikom skidanje slike, umesto da se preuzme ceo file, zahtevaj GET potpisani URL.
+  download(): void {
+    const up = this.uploaded();
+    if (!up) return;
+
+    this.downloadSub?.unsubscribe();
+    this.error.set('');
+    this.downloading.set(true);
+
+    this.downloadSub = this.service.getGetUrl(up.key).subscribe({
+      next: (res) => {
+        this.result.set({ key: res.key, url: res.url });
+        this.downloading.set(false);
+      },
+      error: () => {
+        this.downloading.set(false);
+        this.error.set('Download failed. Try again.');
+      },
+    });
+  }
+
   clear(): void {
-    this.sub?.unsubscribe();
+    this.uploadSub?.unsubscribe();
+    this.downloadSub?.unsubscribe();
+    this.uploaded.set(null);
     this.result.set(null);
     this.uploading.set(false);
+    this.downloading.set(false);
     this.error.set('');
+  }
+
+  onImageError(): void {
+    this.error.set('The image could not be loaded.');
   }
 
   private handleFile(file?: File | null): void {
@@ -64,36 +97,43 @@ export class WhatToDoComponent {
   }
 
   private send(file: File): void {
-    // A new file replaces any upload still in progress
-    this.sub?.unsubscribe();
+    // Novi upload obustavlja sve prethodne subskripcije.
+    this.uploadSub?.unsubscribe();
+    this.downloadSub?.unsubscribe();
+    this.downloading.set(false);
     this.uploading.set(true);
 
-    this.sub = this.service
-      .getPutUrl() // 1. ask the backend for a presigned PUT url
+    this.uploadSub = this.service
+      .getPutUrl() // Zahtevaj od servera PUT URL kako bi sproveo upload.
       .pipe(
-        // 2. send the file straight to storage
+        // Putem operator switchMap preuzmi odgovornost za upload file-a direktno u skladiste.
         switchMap((put) =>
           this.http
             .put(put.url, file, { headers: { 'Content-Type': file.type } })
             .pipe(map(() => put.key)),
         ),
-        // 3. ask the backend for a presigned GET url for the stored file
-        switchMap((key) => this.service.getGetUrl(key)),
       )
       .subscribe({
-        next: (res) => {
-          // Nothing is shown until the whole chain has succeeded
-          this.result.set({ name: file.name, url: res.url });
+        next: (key) => {
+          // Odradi cleanup nakon upload-a.
+          this.result.set(null);
+          this.uploaded.set({ key, name: file.name });
           this.uploading.set(false);
         },
         error: () => {
-          // Keep whatever was last presented
+          // Sacuvaj sta god da je prethodno uspesno upload-ovano.
           this.uploading.set(false);
           this.error.set('Upload failed. Try again.');
         },
       });
   }
-  onImageError(): void {
-    this.error.set('The image could not be loaded.');
+}
+
+// Namespace komponente kako bi se odrzala enkapuslacija i preciznost
+namespace WhatToDoComponent {
+  // izloze pomocni interfejs koji se koristi u logici komponente.
+  export interface Uploaded {
+    key: string;
+    name: string;
   }
 }

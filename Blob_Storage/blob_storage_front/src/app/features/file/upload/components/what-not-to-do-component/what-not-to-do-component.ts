@@ -1,8 +1,7 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { Subscription, switchMap, tap } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ImageService } from '../../../../../core/services/image.service';
 
-/** Tab 1: upload an image, and the server's response is downloaded straight away. */
 @Component({
   standalone: true,
   selector: 'app-what-not-to-do',
@@ -10,21 +9,28 @@ import { ImageService } from '../../../../../core/services/image.service';
 })
 export class WhatNotToDoComponent {
   private readonly service = inject(ImageService);
-  private sub?: Subscription;
+  private uploadSub?: Subscription;
+  private downloadSub?: Subscription;
 
   readonly dragging = signal(false);
-  readonly status = signal<'idle' | 'uploading' | 'done' | 'error'>('idle');
+  readonly status = signal<WhatNotToDoComponent.FileStatues
+  >('idle');
   readonly error = signal('');
   readonly fileName = signal('');
+  readonly imageUrl = signal<string | null>(null);
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.sub?.unsubscribe());
+    inject(DestroyRef).onDestroy(() => {
+      this.uploadSub?.unsubscribe();
+      this.downloadSub?.unsubscribe();
+      this.revokeImageUrl();
+    });
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.handleFile(input.files?.[0]);
-    input.value = ''; // allow re-selecting the same file
+    input.value = ''; // dozvoli ponovnu selekciju istog file-a
   }
 
   onDragOver(event: DragEvent): void {
@@ -38,6 +44,31 @@ export class WhatNotToDoComponent {
     this.handleFile(event.dataTransfer?.files?.[0]);
   }
 
+  /** Preuzima specifiranu sliku direktno putem servera i prezentuje je u komponenti. */
+  download(): void {
+    const key = this.fileName();
+    if (!key) return;
+
+    // Prekini inflight subskripciju
+    this.downloadSub?.unsubscribe();
+    this.error.set('');
+    this.status.set('downloading');
+
+
+    // skini fajl putem servera
+    this.downloadSub = this.service.download(key).subscribe({
+      next: (res) => {
+        this.revokeImageUrl();
+        this.imageUrl.set(URL.createObjectURL(res.file));
+        this.status.set('done');
+      },
+      error: () => {
+        this.status.set('error');
+        this.error.set('Download failed. Try again.');
+      },
+    });
+  }
+
   private handleFile(file?: File | null): void {
     if (!file) return;
 
@@ -47,40 +78,41 @@ export class WhatNotToDoComponent {
     }
 
     this.error.set('');
-    this.send(file);
+    this.upload(file);
   }
 
-  private send(file: File): void {
-    // A new file replaces any upload still in progress
-    this.sub?.unsubscribe();
+  private upload(file: File): void {
+    // Upload novog fajla prekida sve prethodne subskripcije
+    this.uploadSub?.unsubscribe();
+    this.downloadSub?.unsubscribe();
+    // Obrisi sliku iz prikaza
+    this.revokeImageUrl();
+    this.fileName.set('');
     this.status.set('uploading');
 
-    // upload() returns void, so the key is assumed to be the file name
-    this.sub = this.service
-      .upload({ file })
-      .pipe(
-         switchMap((s) => this.service.download(s)))
-      .subscribe({
-        next: (res) => {
-          this.saveBlob(res.file, file.name);
-          this.fileName.set(file.name);
-          this.status.set('done');
-        },
-        error: (e) => {
-          this.status.set('error');
-          this.error.set('Upload failed. Try again.');
-        },
-      });
+    // Otpocni upload
+    this.uploadSub = this.service.upload({ file }).subscribe({
+      next: (key:string) => {
+        
+        this.fileName.set(key);
+        this.status.set('uploaded');
+      },
+      error: () => {
+        this.status.set('error');
+        this.error.set('Upload failed. Try again.');
+      },
+    });
   }
 
-  private saveBlob(blob: Blob, name: string): void {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+  private revokeImageUrl(): void {
+    const url = this.imageUrl();
+    if (url) URL.revokeObjectURL(url);
+    this.imageUrl.set(null);
   }
+}
+// Namespace komponente kako bi se odrzala enkapuslacija i preciznost
+namespace WhatNotToDoComponent{
+  //izlaze status file-a koji se koristi u logici komponente.
+  export type FileStatues = 
+    'idle' | 'uploading' | 'uploaded' | 'downloading' | 'done' | 'error'
 }

@@ -6,27 +6,24 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import rs.ac.uns.ftn.ci.isa.blob_storage.images.dto.GetPutUrlResponse;
 import rs.ac.uns.ftn.ci.isa.blob_storage.images.service.ImageService;
-import software.amazon.awssdk.core.ResponseInputStream;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.io.IOException;
 import java.net.URI;
 
 @RestController
-@RequestMapping("api/images")
+@RequestMapping("api/images/whatNotToDo")
 @CrossOrigin(value = "*", exposedHeaders = "Location")
-public class ImageController {
-
+public class WhatNotToDoImageController {
     private final ImageService service;
 
-    public ImageController(ImageService service) {
+    public WhatNotToDoImageController(ImageService service) {
         this.service = service;
     }
+
     /*
-    Kako NE skiadati fajl
-     */
+   Kako NE skiadati fajl
+    */
     @GetMapping("/{keyName}")
     public ResponseEntity<InputStreamResource> download(@PathVariable String keyName) {
         var response = service.download(keyName);
@@ -47,15 +44,4 @@ public class ImageController {
         return ResponseEntity.created(URI.create(route)).build();
     }
 
-    @GetMapping("url/{key}")
-    public ResponseEntity<String> getGetUrl(@PathVariable(value = "key") String key) throws IOException {
-        var response = service.generateGetUrl(key);
-        return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("url")
-    public ResponseEntity<GetPutUrlResponse> getPutUrl() throws IOException {
-        var response = service.generatePutUrl();
-        return ResponseEntity.ok(response);
-    }
 }
