@@ -19,6 +19,10 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import java.io.IOException;
 import java.time.Duration;
 
+
+/**
+ * Konkretna implementacija servisa za interakciju sa S3 skladistem.
+ */
 @Service
 public class RustFSStorageService implements StorageService {
 
@@ -38,7 +42,7 @@ public class RustFSStorageService implements StorageService {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(keyName)
-//                .contentType(file.getContentType())
+//                .contentType(file.getContentType()) // Mozete specificirati konkretni tip file kojim rukuje S3. Jednom tako potpisan URL prima iskljucivo samo taj tip datoteke.
                 .build();
 
         s3Client.putObject(putObjectRequest,
@@ -49,11 +53,11 @@ public class RustFSStorageService implements StorageService {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(keyName)
-//                .contentType("image/jpeg") // <-- Must match what you send in curl!
+//                .contentType("image/jpeg") // // Mozete specificirati konkretni tip file kojim rukuje S3. Jednom tako potpisan URL prima iskljucivo samo taj tip datoteke.
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10)) // URL valid for 10 minutes
+                .signatureDuration(Duration.ofMinutes(10)) // URL je valida 10 min, ovo je konfigurabilno putem application.properties
                 .putObjectRequest(putObjectRequest)
                 .build();
 

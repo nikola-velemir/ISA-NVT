@@ -6,6 +6,9 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.io.IOException;
 
+/**
+ * Definise interfejs za upravljanje klasicnim uplaod-om i download-om u S3. Takodje pruza mehanizam geneiranja presigned ulr-ova.
+ */
 public interface StorageService {
 
     void uploadFile(String keyName, MultipartFile file) throws IOException;
