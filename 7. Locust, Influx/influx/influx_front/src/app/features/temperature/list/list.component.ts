@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, model, signal } from "@angular/core";
 import { TemperatureApiService } from "../../../core/services/temperature.api.service";
 import { Temperature } from "../../../core/models/temperature.model";
 import { switchMap, tap } from "rxjs";
@@ -6,9 +6,14 @@ import { FormsModule } from "@angular/forms";
 import { CommonModule, DatePipe } from "@angular/common";
 import { TemperatureTableComponent } from "./components/temperature-table.component/temperature-table.component";
 import { TemperatureGraphComponent } from "./components/temperature-graph.component/temperature-graph.component";
+import { TemperatureGrafanaComponent } from "./components/temperature-grafana.component/temperature-grafana.component";
 
 @Component({
-  imports: [FormsModule, CommonModule, TemperatureTableComponent, TemperatureGraphComponent],
+  imports: [FormsModule,
+     CommonModule,
+      TemperatureTableComponent,
+       TemperatureGraphComponent,
+      TemperatureGrafanaComponent],
   selector: "app-list",
   templateUrl: "./list.component.html",
 })
@@ -29,7 +34,7 @@ export class ListComponent {
   ];
 
   readonly location = 'Office';
-  span = '-1h';
+  span = model('-1h');
   readonly views = [
     { label: 'Table', value: 'table' },
     { label: 'Graph', value: 'graph' },
@@ -44,7 +49,7 @@ export class ListComponent {
   }
 
   load() {
-    const span = this.span
+    const span = this.span()
     this.service.get({ span })
       .pipe(
         tap(
@@ -62,7 +67,7 @@ export class ListComponent {
     this.service.create(body)
       .pipe(
         switchMap(() => this.service.get(
-          { span: this.span }
+          { span: this.span() }
         )
         ),
         tap(data => this.readings.set(data))

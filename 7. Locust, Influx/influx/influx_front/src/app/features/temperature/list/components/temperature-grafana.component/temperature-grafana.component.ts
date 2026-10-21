@@ -1,9 +1,10 @@
 import { Component, computed, inject, input } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
+import { GrafanaService } from "../../../../../core/services/grafana.service";
 
 @Component({
   imports: [],
-  selector: "app-temperature-grafana.component",
+  selector: "app-temperature-grafana",
   styleUrl: "./temperature-grafana.component.css",
   templateUrl: "./temperature-grafana.component.html",
 })
@@ -12,20 +13,14 @@ export class TemperatureGrafanaComponent { private sanitizer = inject(DomSanitiz
   /** Flux range start from the dropdown, e.g. "-1h" */
   span = input.required<string>();
 
-  // Replace with your dashboard uid, slug and panel id (ideally from environment config)
-  private readonly baseUrl = 'http://localhost:3000/d-solo/YOUR_DASHBOARD_UID/temperatures';
-  private readonly panelId = '1';
+  private readonly grafanaService = inject(GrafanaService);
 
-  readonly src = computed(() => {
-    const params = new URLSearchParams({
-      orgId: '1',
-      panelId: this.panelId,
-      from: `now${this.span()}`, // "-1h" -> "now-1h"
-      to: 'now',
-      refresh: '5s',
-      theme: 'light',
-    });
+  // Replace with your dashboard uid, slug and panel id (ideally from environment config)
+
+
+  readonly src = computed((span = this.span()) => {
+    const params = this.grafanaService.getGraph(span) 
     // Safe: the base URL is a constant and span comes from a fixed list
-    return this.sanitizer.bypassSecurityTrustResourceUrl(`${this.baseUrl}?${params}`);
+    return this.sanitizer.bypassSecurityTrustResourceUrl(`${params}`);
   });
 }

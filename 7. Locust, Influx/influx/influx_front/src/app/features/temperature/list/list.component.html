@@ -37,7 +37,9 @@
     </div>
     } @else if (view() === 'table') {
     <app-temperature-table [readings]="readings()" />
-    } @else {
+    } @else if (view() === 'graph') {
     <app-temperature-graph [readings]="readings()" />
+    } @else {
+        <app-temperature-grafana [span]="span()"/>
     }
 </div>

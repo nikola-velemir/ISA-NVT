@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   influxdb:
     image: influxdb:2.7
@@ -28,10 +26,13 @@ services:
       - GF_SECURITY_ALLOW_EMBEDDING=true
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=secretpassword 
+      - GF_SECURITY_ADMIN_USER=adminadmin
+      - GF_SECURITY_ADMIN_PASSWORD=adminadmin
+      - INFLUX_TOKEN=my-super-secret-auth-token
     volumes:
       - grafana-storage:/var/lib/grafana
+      - ./grafana-settings/provisioning:/etc/grafana/provisioning
+      - ./grafana-settings/dashboards:/var/lib/grafana/dashboards
     depends_on:
       - influxdb
 
