@@ -56,6 +56,17 @@ locust -f ime_mog_locust_fajla.py
 
 Nakon sto je locust pokrenut, u okviru terminala bice vam data adresa veb interfejsa alata kojoj mozete pristupiti (najcesce `http://0.0.0.0:8089`)
 
+Unutar `docker-compose.yml` je definisan `postresql` servis sa bazom podataka namenjenom za serversku aplikaciju, te pokrenite komandu:
+```bash
+docker compose up
+```
+Odnosno ako ne zelite da vam bude blokiran ternimal:
+```bash
+docker compose up -d
+```
+Ovo ce podici potrebnu `postresql` bazu za ovaj primer.
+
+
 Dodatno je neophodno da pokrenete serversku aplikaciju koja je napisana u `Java` programskom jeziku. Ovo mozete uraditi putem vaseg razvojnog okruzenja, pri cemu ce biti pokrenuta _Spring Boot_ veb aplikacija **koja slusa na portu 8080**.
 
 ### Demonstracija
@@ -71,7 +82,7 @@ Kada otvorite veb interfejs _Locust_ alata, dobicete sledeci ekran.
 
 Najbitniji parametri na ekranu su prikazana input polja.
 
-Polje `"Number of users"` definise konacan broj korisnika za _load test_. _Locust_ ce krenuti od 0 korisnika, nakon cega ce taj broj povecavati. _Locust_ prestaje da povecava broj korisnika kada dostigne broj korisnika koji ste zadali ovim polje. Drugim recima, kada kazemo "Ovaj test je radjen sa 2000 istovremenih korisnika" (parafrazirano), misli se da je broj, u ovom slucaju 2000, zadat unutar ovog polja kao plafon mogucih korisnika.
+Polje `"Number of users"` definise konacan broj korisnika za _load test_. _Locust_ ce krenuti od 0 korisnika, nakon cega ce taj broj povecavati. _Locust_ prestaje da povecava broj korisnika kada dostigne broj korisnika koji ste zadali ovim polje. Drugim recima, kada kazemo "Ovaj test je radjen sa 2000 istovremenih korisnika" (parafrazirano), misli se da je broj, u ovom slucaju 2000, zadat unutar ovog polja kao "plafon" mogucih korisnika.
 
 Polje `"Ramp up"` definise broj korisnika koji predstavlja korak povecanja za _load test_. U svakoj sekundi, _Locust_ ce povecati broj korisnika za korak koji ste ovde zadali. _Locust_ prestaje povecavanje broja korisnika kada dodje do broja koji ste zadali u prethodnom polju. U prakticnom smislu ovo treba da simulira postepeno povecavanje korisnika, kao i da lakse mozete ispratiti kada latencija postaje veca ili kada se javljaju otkazi tokom _load test-a_.
 
@@ -79,3 +90,12 @@ Polje `"Host"` definise adresu veb aplikacije/servisa nad kojim sprovodite _load
 
 Nakon sto zadate ove parametre mozete pokrenuti _load test_ putem dugmeta `"Start"`.
 
+Kada pokrente _load test_, dobicete sledeci ekran gde vam je prikazana trenuta statistika, sadrzana u `"Statistics"` tabu interfejsa. Pored toga, u bilo kom momentu u gornjem desnom uglu imate uproscenu statistiku, kao i kontrole za upravljanje _load test-om_. 
+
+![statistics](./README/images/statistics.png)
+
+Daleko vise informativnu statistiku i prikaz izvrsavanja _load test-a_ imate pod tabom `"Charts"`. Ovde mozete videti kako se latencija, broj zahteva u minuti, otkazi i broj korisnika krecu u jedinici vremena. Grafici vam omogucavaju da pravite predpostavke o problemima i anomalijama sa kojima se susrecete dok aplikacija radi (npr. "Da li na "01:04" sam uspeo da izgubim sve konkecije ka bazi, pa zbog toga imam vecu stopu otkaza?").
+
+![charts](./README/images/charts.png)
+
+_Load test_ mozete zaustaviti putem kontrole `"Stop"` u gornjem desnom uglu veb interfejsa, ili mozete prekinuti _Locust_ proces u terminalu.
