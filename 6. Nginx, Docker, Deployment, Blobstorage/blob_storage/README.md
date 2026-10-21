@@ -36,6 +36,14 @@ Servis koji je pisan u programskom jeziku `rust` koji je neverovatno srodan _Min
 
 ## Primeri
 
+### Predkoraci
+
+Neophodno je da imate instaliran `docker`, `docker compose`, `nodejs`, `npm` i `Angular CLI`. Linkove za instalacije mozete pronaci ovde:
+
+- [Docker i docker compose instalacija](https://docs.docker.com/engine/install/)
+- [Nodejs i NPM instalacija](https://nodejs.org/en/download)
+- [Angular instalacija](https://angular.dev/installation)
+
 ### Konfiguracija servisa
 
 U ovom primeru se koristi _RustFS_. Neophodno je pokrenuti servis, cija je konfiguracija slike sadrzana unutar `docker-compose.yml`.
@@ -44,10 +52,9 @@ Odnosno:
 
 ```bash
 docker compose up
-
 ```
 
-Ili:
+Ili ako ne zelite da blokirate terminal:
 
 ```bash
 docker compose up -d
@@ -63,6 +70,6 @@ Ovde mozemo putem grafickog interfejsa krerati bucket-e u kojima ce se nalaziti 
 
 ### Demonstracija
 
-Pokrenite serversku aplikaciju u `blob_storage_back`. Pokrenuti _Angular_ aplikaciju u `blobk_storage_front`, puem komande `ng serve` (odnostno `ng serve --open`).
+Pokrenite serversku aplikaciju u `blob_storage_back` putem svog razvojnog okruzenja. Pokrenuti _Angular_ aplikaciju u `blob_storage_front`, odnosno prvo pokrenuti `npm install` da instalirate zavisnosti, pa putem komande `ng serve` (odnostno `ng serve --open`) je pokrenite. Navigirajte se na `localhost:4200` unutar vaseg pretrazivaca da pristupite _Angular_ aplikaciji.
 
-Primer demonstrira dva pristupa, onaj klasican i onaj putem URL mehanizama. Serverska aplikacija sadrzi dve kontrolerske komponente (`WhatNotToDoImageController` i `WhatToDoImageController`). Obe klase su pokrivene sa `javadoc`, tako da mozete da analizirate kod i smernice koje su u njemu napisane.
+Primer demonstrira dva pristupa, onaj klasican i onaj putem URL mehanizama. Serverska aplikacija sadrzi dve kontrolerske komponente (`WhatNotToDoImageController.java` i `WhatToDoImageController.java`). Obe klase su pokrivene sa `javadoc`, tako da mozete da analizirate kod i smernice koje su u njemu napisane.
