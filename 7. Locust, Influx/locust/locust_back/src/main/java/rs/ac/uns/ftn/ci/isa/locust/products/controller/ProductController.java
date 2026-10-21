@@ -1,4 +1,4 @@
-package rs.ac.uns.ftn.ci.isa.locust.controller;
+package rs.ac.uns.ftn.ci.isa.locust.products.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
