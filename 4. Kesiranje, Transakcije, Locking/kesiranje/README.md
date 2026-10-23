@@ -44,9 +44,11 @@ Ehcache se lako integriše sa _Spring_ i _Spring Boot_ okvirima putem anotacija 
 
 Ehcache mozete koristi:
 
-* Kada razvijate **Java / Spring** aplikacije koje trpiti veliku količinu čitajućih zahteva.
-* Kada želite brzo keširanje unutar procesa iste aplikacije (*In-Memory Caching*) bez potrebe za podizanjem eksternih keš servera (poput _Redis-a_ ili _Memcached-a_).
-* Kada vam je potrebna jednostavna konfiguracija i brza implementacija keširanja sa podrškom za Disk/Off-Heap proširenja.
+- Kada razvijate **Java / Spring** aplikacije koje trpiti veliku količinu čitajućih zahteva.
+
+- Kada želite brzo keširanje unutar procesa iste aplikacije (_In-Memory Caching_) bez potrebe za podizanjem eksternih keš servera (poput _Redis-a_ ili _Memcached-a_).
+
+- Kada vam je potrebna jednostavna konfiguracija i brza implementacija keširanja sa podrškom za Disk/Off-Heap proširenja.
 
 ---
 
