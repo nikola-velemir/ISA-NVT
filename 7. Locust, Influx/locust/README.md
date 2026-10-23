@@ -19,6 +19,11 @@ Scenariji opterecenja se definisu kroz obicne _Python_ skripte. Nema potrebe za 
 
 Da biste pokrenuli primer neophodno je da imate instaliran _Python_ programski jezik (konkretno verziju 3.14), _Docker_, _Java_ programski jezik.
 
+- [Docker i docker compose instalacija](https://docs.docker.com/engine/install/)
+- [Nodejs i NPM instalacija](https://nodejs.org/en/download)
+- [Angular instalacija](https://angular.dev/installation)
+
+
 
 Prvo je neophodno da kreirate _Python_ virtuelno orkuzenje, koristeci komandu:
 

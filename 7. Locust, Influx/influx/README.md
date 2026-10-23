@@ -1,4 +1,4 @@
-# Vremenske baze podataka (Time-Series Databases)
+# Vremenske baze podataka
 
 Pojedini zahtevi veb aplikacija se tiču napredne analitike i praćenja stanja sistema kroz vreme. Možemo uzeti primer pametne kuće i senzora koji šalju očitavanja temperature. Korisnicima je ove podatke potrebno prikazati u vidu linijskih grafika (kako temperatura varira u jedinici vremena), ali i kroz druge vizuelizacije poput stubičastih grafika (_bar plots_).
 
@@ -65,9 +65,9 @@ _Grafana_ je otvorena platforma za vizuelizaciju i analitiku podataka koja se u 
 Osnovni pojmovi u Grafani:
 - **Izvor podataka (_Data Source_)**: Konfigurabilna veza između Grafane i baze podataka (u našem slučaju InfluxDB). Grafana se povezuje sa bazom i omogućava izvršavanje upita direktno iz svog korisničkog interfejsa.
 
-- **Komandna tabla (_Dashboard_)**: Centralna stranica koja sadrži skup povezanih vizuelnih prikaza i pruža sveobuhvatan uvid u stanje sistema u realnom vremenu.
+- **Komandna tabla (_Dashboard_)**: Centralna stranica koja sadrži skup povezanih vizuelnih prikaza i pruža uvid u stanje sistema u realnom vremenu.
 
-- **Panel**: Pojedinačni vizuelni element unutar komandne table. Svaki panel koristi upit (poput našeg _Flux_ upita) da povuče podatke iz baze i prikaže ih u željenoj formi — bilo kao linijski grafikon (_time series_), stubičasti dijagram (_bar chart_), brojčani indikator (_stat_), merač (_gauge_), ili tabelu.
+- **Panel**: Pojedinačni vizuelni element unutar komandne table. Svaki panel koristi upit (poput našeg _Flux_ upita) da povuče podatke iz baze i prikaže ih u željenoj formi. Ta forma moze biti linijski grafikon (_time series_), stubičasti dijagram (_bar chart_), brojčani indikator (_stat_), merač (_gauge_), ili tabela.
 
 U radu sa _InfluxDB_, _Flux_ upiti se unose direktno u editor panela unutar _Grafane_. _Grafana_ automatski prepoznaje vremensku osu (`_time`) i vrednosti iz rezultata upita, omogućavajući krajnjim korisnicima da dinamički menjaju opseg prikaza.
 
@@ -76,6 +76,11 @@ U radu sa _InfluxDB_, _Flux_ upiti se unose direktno u editor panela unutar _Gra
 ### Podešavanje
 
 Da biste pokrenuli primer u ovim vežbama, trebate imati instaliran Docker, Java programski jezik, NodeJS i Angular CLI.
+
+- [Docker i docker compose instalacija](https://docs.docker.com/engine/install/)
+- [Nodejs i NPM instalacija](https://nodejs.org/en/download)
+- [Angular instalacija](https://angular.dev/installation)
+
 
 Prvo je neophodno da pokrenete sve servise, sadržane u `docker-compose.yml` fajlu. Ovo ćete uraditi putem komande:
 ```bash
