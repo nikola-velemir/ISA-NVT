@@ -1,29 +1,29 @@
-# Kesiranje podataka
+# Keširanje podataka
 
-Obicno zahtevi veb aplikacija specificiraju dobavljanje odredjenog sadrzaja koji se prezentuje korisnicima. Takvi zahtevi se obicno odnose na pretrazivanje, filtriranje, sortiranje sadrzaja. Pri povecanom saobracaju ili broju korisnika, broj interakcija sa bazom podataka raste. Pri tome ovakvi tipovi zahteva zahtevaju operacije nad bazom podataka za koje je potrebno vise vremena od operacija kreiranja, izmene, brisanja i dobavljanja singularnih redova. Uporedni zahtevi povecavaju pritisak na bazu podataka, uzimaju konekcije ka bazi, i duze drze niti same veb aplikacije. Zbog toga se cesto javlja problem da slucajevi koriscenja ovih zahteva traju dugo, zbog cega se vreme odgovora na zahtev povecava. Isto tako se  pomenuti sadrzaj cesto zahteva vise puta, od vise korisnika. Zbog toga upitivanje baze za cesto trazene podatke postaje neoptimalno i opterecujuce, te se javlja potreba da se ovakvi podaci (ili njihova reprezentacija) skladiste u drugim mestima, koja omogucuju brzi pristup i rasterecenje glavne baze podataka.
+Obično zahtevi veb aplikacija specificiraju dobavljanje određenog sadržaja koji se prezentuje korisnicima. Takvi zahtevi se obično odnose na pretraživanje, filtriranje, sortiranje sadržaja. Pri povećanom saobraćaju ili broju korisnika, broj interakcija sa bazom podataka raste. Pri tome ovakvi tipovi zahteva podrazumevaju operacije nad bazom podataka za koje je potrebno više vremena od operacija kreiranja, izmene, brisanja i dobavljanja singularnih redova. Uporedni zahtevi povećavaju pritisak na bazu podataka, uzimaju konekcije ka bazi, i duže drže niti same veb aplikacije. Zbog toga se često javlja problem da ovakvi slučajevi korišćenja imaju visoku latenciju. Isto tako se pomenuti sadržaj često zahteva više puta, od više korisnika. Zbog toga upitivanje baze za često trazene podatke postaje neoptimalno i opterećujuće, te se javlja potreba da se ovakvi podaci (ili njihova reprezentacija) skladište u drugim mestima, koja omogucuju brži pristup i rasterecenje glavne baze podataka.
 
-Mehanizmi kesiranja sluze kako bi se upravo ovi podaci mogli zapamtiti na nekom mestu. Obicno je pristup ovakvom skladistu neverovatno brz, i kompletno eliminise interakciju sa glavnom bazom podataka. Sadrzaj koji cesto biva trazen, ili sadrzaj koji se ne menja cesto, moze biti skladisten u kes memoriji, te je prakticno odmah spreman na dobavljanje i prezentaciju korisnicima.
+Mehanizmi keširanja služe kako bi se upravo ovi podaci mogli zapamtiti u nekom skladištu koje nije glavna baza podataka. Obično je pristup ovakvom skladištu neverovatno brz, i kompletno eliminiše interakciju sa glavnom bazom podataka. Sadržaj koji često biva tražen, ili sadržaj koji se ne menja često, može biti skladišten u keš memoriji, te je praktično odmah spreman na dobavljanje i prezentaciju korisnicima.
 
-Postoji vise nacina kesiranja:
+Postoji više nacina keširanja podataka:
 
-- Kesiranje na klijentskoj strani: Sadrzaj koji se jako retko menja moze ostati u memoriji klijentske aplikacije, cime se potreba za slanjem zahteva ka serverskoj aplikaciji, osim kad podaci ne zastare ili postanu nevalidni.
+- **Keširanje na klijentskoj strani**: Sadržaj koji se jako retko menja može ostati u memoriji klijentske aplikacije, čime se uklanja potreba za slanjem zahteva ka serverskoj aplikaciji, osim kad podaci ne zastare ili postanu nevalidni.
 
-- Kesiranje na serverskoj strani: Sadrzaj koji se cesto trazi moze biti skladisten u namenskoj kes memoriji, odakle se izvlaci i prezentuje korisnicima. Ovime se odstranjuje potreba da se vrse upiti nad glavnom bazom podataka.
+- **Keširanje na serverskoj strani**: Sadržaj koji se često traži može biti skladišten u namenskoj keš memoriji, odakle se izvlači i prezentuje korisnicima. Ovime se odstranjuje potreba da se vrše upiti nad glavnom bazom podataka.
 
-Iako nam kesiranje podataka nudi brzi pristup podacima, javljaju se pitanja vezana za cuvanje podataka smestenih u kes memoriji.
+Iako nam keširanje podataka nudi brži pristup podacima, javljaju se pitanja vezana za čuvanje podataka smeštenih u keš memoriji.
 
-- **Vreme koliko se podaci nalaze u kesu**: Termin koji se koristi za vreme skladistenja se zove **vreme zivota** (**_time to live - TTL_**). Mozemo specificirati koliko dugo podaci ostaju u kes memoriji. Nakon isteka ovog vremenskog perioda, podaci bivaju uklonjeni, te oslobadjaju prostor za nove podatke koji se cesce koriste. Isto tako se sprecava prepunjavanje kes memorije.
-- **Kada je neophodno podatke iz kesa ukloniti**: Evikcija podataka (_Cache Eviction_) je termin koji se vezuje za operacije koje se sprovode kada se podaci brisu iz kes memorije. Ponekad se mogu sprovesti izmene podataka, i neophodno je da te promene budu sveze i prikazane korisnicima kada ih oni zatraze. Ako su ovi podaci skladisteni u kes memoriji, sve do njihovog isteka zivota (ako je zadato), bice prezentovani korisnicima. U ovom slucaju korisnici dobijaju pogresne podatke. Stoga se sprovode odredjene operacije gde se zastareli podaci brisu iz kesa, ukoliko ti podaci bivaju izmenjeni, u cilju da korisnici ne bi dobijali netacne podatke.
+- **Vreme koliko se podaci nalaze u kešu**: Termin koji se koristi za vreme skladištenja se zove **vreme zivota** (**_time to live - TTL_**). Možemo specificirati koliko dugo podaci ostaju u keš memoriji. Nakon isteka ovog vremenskog perioda, podaci bivaju uklonjeni, te oslobadjaju prostor za nove podatke koji se češće koriste. Isto tako se sprečava prepunjavanje keš memorije.
+- **Kada je neophodno podatke iz keša ukloniti**: Evikcija podataka (_Cache Eviction_) je termin koji se vezuje za operacije koje se sprovode kada se podaci brišu iz keš memorije. Ponekad se mogu sprovesti izmene podataka, i neophodno je da te promene budu sveže i prikazane korisnicima kada ih oni zatraže. Ako su ovi podaci skladišteni u keš memoriji, sve do njihovog isteka života (ako je zadato), biće prezentovani korisnicima. U ovom slučaju korisnici dobijaju pogrešne podatke. Stoga se sprovode određene operacije gde se zastareli podaci brisu iz keša, ukoliko ti podaci bivaju izmenjeni, u cilju da korisnici ne bi dobijali netačne podatke.
   
-- **Politika brisanja podataka**: Politika evikcije (_Eviction Policy_) je termin koji se odnosi na mehanizam koji rukuje podacima u kes memoriji prilikom njenog kompletnog popunjavanja. Ukoliko se kes memorija popuni, a pristignu novi podaci, potrebno je osloboditi odredjenu kolicinu prostora da bi se novi podaci skladistili. Ovde mozemo izdvojiti dve najcesce politike:
+- **Politika brisanja podataka**: Politika evikcije (_Eviction Policy_) je termin koji se odnosi na mehanizam koji rukuje podacima u keš memoriji prilikom njenog kompletnog popunjavanja. Ukoliko se keš memorija popuni, a pristignu novi podaci, potrebno je osloboditi određenu količinu prostora da bi se novi podaci skladištili. Ovde možemo izdvojiti dve najčešće politike:
 
-  - **Najduze nekorisceni**: LRU (_Least Recently Used_) specificira politku gde se podaci koji su najdavnije korisceni (odnosno prisupano im je davno, a postoje podaci koji su bili skoro korisceni) brisu iz memorije kako bi se prostor oslobodio.
+  - **Najduže nekorišćeni**: LRU (_Least Recently Used_) specificira politku gde se podaci koji su najdavnije korišćeni (odnosno prisupano im je davno, a postoje podaci koji su bili skoro korišćeni) brišu iz memorije kako bi se prostor oslobodio.
 
-  - **Najredje korisceni**: LFU (_Least Frequently Used_) specificira politiku gde se podaci koji su najredje korisceni (odnosno ne pristupa im se toliko cesto, a nalaze se u kes memoriji) brisu iz memorije kako bi se prostor oslobodio.
+  - **Najređe korišćeni**: LFU (_Least Frequently Used_) specificira politiku gde se podaci koji su najređe korišćeni (odnosno ne pristupa im se toliko često, a nalaze se u keš memoriji) brišu iz memorije kako bi se prostor oslobodio.
   
 ## Ehcache
 
-**Ehcache** je open-source alat za keširanje zasnovanih na _Java_ tehnologiji. Naširoko se koristi u _Java_ i _Spring_ aplikacijama zbog svoje jednostavne integracije i fleksibilnosti pri upravljanju memorijom.
+**Ehcache** je open-source alat za keširanje zasnovan na _Java_ tehnologiji. Naširoko se koristi u _Java_ i _Spring_ aplikacijama zbog svoje jednostavne integracije i fleksibilnosti pri upravljanju memorijom.
 
 Ovaj mehanizam je posrednik između aplikacije i baze podataka: kada aplikacija zatraži podatak, Ehcache prvo proveri da li je taj podatak već skladišten u keš memoriji. Ako jeste, vrati ga instantno; ako nije, podatak se čita iz baze, upisuje u Ehcache i potom vraća aplikaciji za narednu upotrebu.
 
@@ -53,7 +53,7 @@ Ehcache mozete koristi:
 
 ---
 
-Ehcache konfigurisete putem XML fajla, odnosno `ehcache.xml`, koji cete smestiti u `src/main/resources`. Primer konfiguracije moze biti:
+Ehcache konfigurišete putem XML fajla, odnosno `ehcache.xml`, koji ćete smestiti u `src/main/resources`. Primer konfiguracije može biti:
 
 ```xml
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -76,15 +76,15 @@ Ehcache konfigurisete putem XML fajla, odnosno `ehcache.xml`, koji cete smestiti
 ```
 ---
 
-Da biste koristili **Ehcache** u vasoj aplikaciji, neophodno je da koristite anotacije koje vam nudi _**Spring Cache**_ apstrakcija.
-Ove anotacije imaju dosta parametara kojima se upravlja nacin belezenja i citanja iz kes memorije. Jezik koji se koristi za definisanje vrednosti parametara se zove _SpEl_ (_Spring Expression Language_).
+Da biste koristili **Ehcache** u vašoj aplikaciji, neophodno je da koristite anotacije koje vam nudi _**Spring Cache**_ apstrakcija.
+Ove anotacije imaju dosta parametara kojima se upravlja način beleženja i čitanja iz keš memorije. Jezik koji se koristi za definisanje vrednosti parametara se zove _SpEl_ (_Spring Expression Language_).
 
-Dokumentaciju i informacije o _Spring Cache_ i _SpEl_ mozete naci ovde:
+Dokumentaciju i informacije o _Spring Cache_ i _SpEl_ možete naći ovde:
 - [Spring Cache](https://docs.spring.io/spring-boot/reference/io/caching.html)
 - [Spring Expression Language](https://docs.spring.io/spring-framework/reference/core/expressions.html)
 
 --- 
-Anotaciju `@Cacheable` mozete postaviti iznad metode unutar svoje komponente (najprirodnije iznad servisne komponente). 
+Anotaciju `@Cacheable` možete postaviti iznad metode unutar svoje komponente (najprirodnije iznad servisne komponente). 
 
 ```java
 @Service
@@ -100,9 +100,9 @@ public class KorisnikService {
 }
 ```
 
-Ako se proveri sadrzaj kesa `korisniciCache` sa kljucem koja je vrednost `id` i vrednost postoji u memoriji, metoda servisa nece biti pozvana, a sadrzaj skladisten u kes memoriji bice vracen pozivaocu. Ukoliko ne postoji zapis sa ovim kljucem, metoda servisa ce se izvrsiti, nakon cega se njen rezultat upisuje u kes memoriju.
+Ako se proveri sadržaj keša `korisniciCache` sa ključem koja je vrednost `id` i vrednost postoji u memoriji, metoda servisa neće biti pozvana, a sadržaj skladišten u keš memoriji biće vraćen pozivaocu. Ukoliko ne postoji zapis sa ovim ključem, metoda servisa će se izvršiti, nakon čega se njen rezultat upisuje u keš memoriju.
 
-**Napomena**: Da bi se vasa POJO klasa smestila u kes memoriju, neophodno je da implementira interfejs `Serializable`.
+**Napomena**: Da bi se vasa POJO klasa smestila u keš memoriju, neophodno je da implementira interfejs `Serializable`.
 
 Pored `@Cacheable`, _Spring Cache_ apstrakcija nudi još dve anotacije koje služe da keš ostane usklađen sa bazom podataka:
 
@@ -157,7 +157,7 @@ Glavne karakteristike koje odlikuju _Redis_:
 
 ### Kada koristiti Redis?
 
-- Kada razvijate distribuirane sisteme ili arhitekturu sa više instanci mikrousluga koje moraju da dele jedinstveni keš.
+- Kada razvijate distribuirane sisteme ili arhitekturu sa više instanci mirkoservisa koje moraju da dele jedinstveni keš.
 
 - Kada vam je potrebna perzistentnost keša i nezavisnost keš memorije od životnog ciklusa jedne aplikacije.
 
@@ -192,14 +192,14 @@ public class KorisnikService {
 }
 ```
 
-Time sto koristite **Spring Cache** apstrakciju, prelazak na _Redis_ sa _Ehcache_ se svodi na izmenu konfiguracije. _XML_ konfiguracija nije potrebna, vec cete definisati jednu konfiguracionu klasu koja pruza _Redis_ _Bean-ove_ u _runtime_.
+Time sto koristite **Spring Cache** apstrakciju, prelazak na _Redis_ sa _Ehcache_ se svodi na izmenu konfiguracije. _XML_ konfiguracija nije potrebna, vec ćete definisati jednu konfiguracionu klasu koja pruža _Redis_ _Bean-ove_ u _runtime_.
 
 
-**Napomena**: Da bi se vasa POJO klasa smestila u kes memoriju, neophodno je da implementira interfejs `Serializable`.
+**Napomena**: Da bi se vaša POJO klasa smestila u keš memoriju, neophodno je da implementira interfejs `Serializable`.
 
 ## Primeri
 
-U ovim vezbana nacicete dva primera _Spring Boot_ aplikacije. Jedan primer podrzava _Ehcache_, drugi _Redis_. Da bi ste testirali aplikacije, mozete koristiti alat kao sto je **_Postman_**.
+U ovim vežbama naci ćete dva primera _Spring Boot_ aplikacije. Jedan primer podržava _Ehcache_, drugi _Redis_. Da bi ste testirali aplikacije, možete koristiti alat kao što je **_Postman_**.
 
 ### Ehcache primer
 
@@ -222,4 +222,4 @@ Unutar projekta, odnosno unutar koda klase `RedisConfig.java` naći ćete konfig
 
 U servisnoj klasi `ProductServiceImpl.java` naći ćete metode koje primenjuju mehanizam keširanja, zajedno sa proizvoljno dodeljenim ključevima, budući da nije neophodno prethodno ih navesti putem konfiguracije.
 
-Unutar `docker-compose.yml` mozete procitati komentare koji su ostavljeni, a vezani su za konfiguraciju servisa.
+Unutar `docker-compose.yml` možete pročitati komentare koji su ostavljeni, a vezani su za konfiguraciju servisa.
