@@ -6,7 +6,8 @@ Mehanizmi kesiranja sluze kako bi se upravo ovi podaci mogli zapamtiti na nekom 
 
 Postoji vise nacina kesiranja:
 
-- Kesiranje na klijentskoj strani: Sadrzaj koji se jako retko menja moze ostati u memoriji klijentske aplikacije, cime se kompletno odstranjuje potreba za slanjem zahteva ka serverskoj aplikaciji
+- Kesiranje na klijentskoj strani: Sadrzaj koji se jako retko menja moze ostati u memoriji klijentske aplikacije, cime se potreba za slanjem zahteva ka serverskoj aplikaciji, osim kad podaci ne zastare ili postanu nevalidni.
+
 - Kesiranje na serverskoj strani: Sadrzaj koji se cesto trazi moze biti skladisten u namenskoj kes memoriji, odakle se izvlaci i prezentuje korisnicima. Ovime se odstranjuje potreba da se vrse upiti nad glavnom bazom podataka.
 
 Iako nam kesiranje podataka nudi brzi pristup podacima, javljaju se pitanja vezana za cuvanje podataka smestenih u kes memoriji.
@@ -72,7 +73,11 @@ Ehcache konfigurisete putem XML fajla, odnosno `ehcache.xml`, koji cete smestiti
 </config>
 ```
 
-Da biste koristili **Ehcache** u vasoj aplikaciji, neophodno je da koristite anotacije `@Cacheable` iznad metode svoje komponente (najprirodnije iznad servisne komponente).
+Da biste koristili **Ehcache** u vasoj aplikaciji, neophodno je da koristite anotacije `@Cacheable` iznad metode svoje komponente (najprirodnije iznad servisne komponente). Ove anotacije imaju dosta parametara kojima se upravlja nacin belezenja i citanja iz kes memorije. Jezik koji se koristi za definisanje vrednosti parametara se zove _SpEl_ (_Spring Expression Language_).
+
+Dokumentaciju i informacije o _Spring Cache_ i _SpEl_ mozete naci ovde:
+- [Spring Cache](https://docs.spring.io/spring-boot/reference/io/caching.html)
+- [Spring Expression Language](https://docs.spring.io/spring-framework/reference/core/expressions.html)
 
 ```java
 @Service
@@ -88,11 +93,13 @@ public class KorisnikService {
 }
 ```
 
-Ako se proveri sadrzaj kesa za kljucem `korisniciCache`, metoda servisa nece biti pozvana, a sadrzaj skladisten u kes memoriji bice vracen pozivaocu. Ukoliko ne postoji zapis sa ovim kljucem, metoda servisa ce se izvrsiti, nakon cega se njen rezultat upisuje u kes memoriju.
+Ako se proveri sadrzaj kesa `korisniciCache` sa kljucem koja je vrednost `id` i vrednost postoji u memoriji, metoda servisa nece biti pozvana, a sadrzaj skladisten u kes memoriji bice vracen pozivaocu. Ukoliko ne postoji zapis sa ovim kljucem, metoda servisa ce se izvrsiti, nakon cega se njen rezultat upisuje u kes memoriju.
+
+**Napomena**: Da bi se vasa POJO klasa smestila u kes memoriju, neophodno je da implementira interfejs `Serializable`.
 
 ## Redis
 
-**Redis** (**_REmote DIctionary Server_**) je izuzetno popularan, _open-source_, _in-memory_ sistem za skladištenje podataka koji se najčešće koristi kao keš baza podataka, broker poruka i keš memorija sa mogućnošću perzistentnosti. Za razliku od _Ehcache-a_ koji je _in-process_ (živi unutar memorije same _Java_ aplikacije), _Redis_ funkcioniše kao zaseban, eksterni server.
+**Redis** (**_REmote DIctionary Server_**) je izuzetno popularan _in-memory_ sistem za skladištenje podataka koji se najčešće koristi kao keš baza podataka, broker poruka i keš memorija sa mogućnošću perzistentnosti. Za razliku od _Ehcache-a_ koji je _in-process_ (živi unutar memorije same _Java_ aplikacije), _Redis_ funkcioniše kao zaseban, eksterni server.
 
 Ovakav pristup ga čini idealnim za distribuirane sisteme, mikro servise gde više instanci iste aplikacije treba da deli isti keš, kao i za situacije kada je potrebno memorijsko skladište velikog kapaciteta koje je nezavisno od životnog ciklusa jedne aplikacije.
 
@@ -149,3 +156,31 @@ public class KorisnikService {
 ```
 
 Time sto koristite **Spring Cache** apstrakciju, prelazak na _Redis_ sa _Ehcache_ se svodi na izmenu konfiguracije. _XML_ konfiguracija nije potrebna, vec cete definisati jednu konfiguracionu klasu koja pruza _Redis_ _Bean-ove_ u _runtime_.
+
+
+**Napomena**: Da bi se vasa POJO klasa smestila u kes memoriju, neophodno je da implementira interfejs `Serializable`.
+
+## Primeri
+
+U ovim vezbana nacicete dva primera _Spring Boot_ aplikacije. Jedan primer podrzava _Ehcache_, drugi _Redis_. Da bi ste testirali aplikacije, mozete koristiti alat kao sto je _Postman_.
+
+### Ehcache primer
+
+U folderu `ehcache-primer` naći ćete primer _Spring Boot_ aplikacije gde se koristi _Ehcache_. Pod folderom `src/main/resources` imate konfiguraciju _Ehcache_. Ova konfiguracija je pokrivena komentarima, te je možete proučiti. U servisnoj klasi `ProductServiceImpl.java` naći ćete metode koje primenjuju mehanizam keširanja, zajedno sa dodeljenim ključevima koji su navedeni u `src/main/resources/ehcache.xml`.
+
+
+### Redis primer
+
+Da biste pokrenuli primer sa _Redis-om_, neophodno je da imate instaliran _Redis_ na svojoj lokalnoj mašini. Podrazumevani port koji je naveden u `application.properties` je 6379. Ukoliko nemate _Redis_ instaliran, možete pokrenuti `docker-compose.yml` komandom:
+
+```bash
+docker compose up
+# ili ako ne zelite da blokirate terminal
+docker compose up -d
+```
+
+Nakon što se (po potrebi) slika za _Redis_ preuzme i pokrene, možete pokrenuti _Redis_ primer, koji se nalazi u folderu `redis-primer`.
+
+Unutar projekta, odnosno unutar koda klase `RedisConfig.java` naći ćete konfiguraciju _Redis_ keša, kao i definicije _Spring Bean-ova_ koji se koriste za upravljanje kešom.
+
+U servisnoj klasi `ProductServiceImpl.java` naći ćete metode koje primenjuju mehanizam keširanja, zajedno sa proizvoljno dodeljenim ključevima, budući da nije neophodno prethodno ih navesti putem konfiguracije.
