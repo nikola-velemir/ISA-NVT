@@ -89,3 +89,61 @@ public class KorisnikService {
 Ako se proveri sadrzaj kesa za kljucem `korisniciCache`, metoda servisa nece biti pozvana, a sadrzaj skladisten u kes memoriji bice vracen pozivaocu. Ukoliko ne postoji zapis sa ovim kljucem, metoda servisa ce se izvrsiti, nakon cega se njen rezultat upisuje u kes memoriju.
 
 ## Redis
+
+**Redis** (**_REmote DIctionary Server_**) je izuzetno popularan, _open-source_, _in-memory_ sistem za skladištenje podataka koji se najčešće koristi kao keš baza podataka, broker poruka i keš memorija sa mogućnošću perzistentnosti. Za razliku od Ehcache-a koji je _in-process_ (živi unutar memorije same Java aplikacije), Redis funkcioniše kao zaseban, eksterni server.
+
+Ovakav pristup ga čini idealnim za distribuirane sisteme, mikro servise gde više instanci iste aplikacije treba da deli isti keš, kao i za situacije kada je potrebno memorijsko skladište velikog kapaciteta koje je nezavisno od životnog ciklusa jedne aplikacije.
+
+
+---
+
+Glavne karakteristike koje odlikuju _Redis_:
+
+- **Visoke performanse i brzina**: Budući da sve podatke čuva u radnoj memoriji, _Redis_ postiže neverovatno brze odzive i može da obradi stotine hiljada operacija u sekundi.
+
+- **Perzistentnost podataka**: Iako je u osnovi memorijska baza, _Redis_ omogućava opcionalno čuvanje podataka na disku (putem snapshot-ova ili _AOF - Append Only File_ strategije), čime se sprečava gubitak keširanih podataka u slučaju restartovanja servera.
+
+- **Napredne strukture podataka**: Za razliku od običnih ključ-vrednost baza, _Redis_ podržava bogat set struktura podataka: stringove, heš tabele, liste, skupove, sortirane skupove i bitmape, što daje veliku fleksibilnost u modelovanju keša.
+
+- **Napredne politike evikcije**: Kada dostigne zadati memorijski limit, _Redis_ automatski primenjuje konfigurisanu politiku brisanja, uključujući _LRU_, _LFU_, nasumično brisanje ili istekle ključeve sa _TTL-om_.
+
+---
+
+### Kada koristiti Redis?
+
+- Kada razvijate distribuirane sisteme ili arhitekturu sa više instanci mikrousluga koje moraju da dele jedinstveni keš.
+
+- Kada vam je potrebna perzistentnost keša i nezavisnost keš memorije od životnog ciklusa jedne aplikacije.
+
+- Kada su vam potrebne napredne strukture podataka ili naprednije funkcije poput Pub/Sub mehanizama za razmenu poruka.
+
+---
+
+### Primer konfiguracije i upotrebe u Spring Boot-u
+
+Da biste povezali Spring Boot aplikaciju sa Redis-om, najpre ga konfigurišete kroz application.yml (ili application.properties) fajl:
+
+```yml
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+```
+
+Zatim, potpuno isto kao kod Ehcache-a, možete koristiti standardne Spring anotacije za keširanje nad vašim servisima:
+
+```java
+@Service
+public class KorisnikService {
+
+    // Metoda koja proverava Redis keš pre upita u bazu podataka
+    @Cacheable(value = "korisniciCache", key = "#id")
+    public Korisnik pronadjiKorisnikaPoId(Long id) {
+        System.out.println("Dohvatanje podataka iz baze za ID: " + id);
+        return korisnikRepository.findById(id).orElse(null);
+    }
+}
+```
+
+Time sto koristite **Spring Cache** apstrakciju, prelazak na _Redis_ sa _Ehcache_ se svodi na izmenu konfiguracije. _XML_ konfiguracija nije potrebna, vec cete definisati jednu konfiguracionu klasu koja pruza _Redis_ _Bean-ove_ u _runtime_.
