@@ -74,12 +74,17 @@ Ehcache konfigurisete putem XML fajla, odnosno `ehcache.xml`, koji cete smestiti
 
 </config>
 ```
+---
 
-Da biste koristili **Ehcache** u vasoj aplikaciji, neophodno je da koristite anotacije `@Cacheable` iznad metode svoje komponente (najprirodnije iznad servisne komponente). Ove anotacije imaju dosta parametara kojima se upravlja nacin belezenja i citanja iz kes memorije. Jezik koji se koristi za definisanje vrednosti parametara se zove _SpEl_ (_Spring Expression Language_).
+Da biste koristili **Ehcache** u vasoj aplikaciji, neophodno je da koristite anotacije koje vam nudi _**Spring Cache**_ apstrakcija.
+Ove anotacije imaju dosta parametara kojima se upravlja nacin belezenja i citanja iz kes memorije. Jezik koji se koristi za definisanje vrednosti parametara se zove _SpEl_ (_Spring Expression Language_).
 
 Dokumentaciju i informacije o _Spring Cache_ i _SpEl_ mozete naci ovde:
 - [Spring Cache](https://docs.spring.io/spring-boot/reference/io/caching.html)
 - [Spring Expression Language](https://docs.spring.io/spring-framework/reference/core/expressions.html)
+
+--- 
+Anotaciju `@Cacheable` mozete postaviti iznad metode unutar svoje komponente (najprirodnije iznad servisne komponente). 
 
 ```java
 @Service
@@ -98,6 +103,36 @@ public class KorisnikService {
 Ako se proveri sadrzaj kesa `korisniciCache` sa kljucem koja je vrednost `id` i vrednost postoji u memoriji, metoda servisa nece biti pozvana, a sadrzaj skladisten u kes memoriji bice vracen pozivaocu. Ukoliko ne postoji zapis sa ovim kljucem, metoda servisa ce se izvrsiti, nakon cega se njen rezultat upisuje u kes memoriju.
 
 **Napomena**: Da bi se vasa POJO klasa smestila u kes memoriju, neophodno je da implementira interfejs `Serializable`.
+
+Pored `@Cacheable`, _Spring Cache_ apstrakcija nudi još dve anotacije koje služe da keš ostane usklađen sa bazom podataka:
+
+- `@CachePut` uvek izvršava metodu, a njen rezultat upisuje u keš pod zadatim ključem (prepisuje staru vrednost). Koristi se pri izmeni podataka.
+
+- `@CacheEvict` uklanja zapis iz keša. Koristi se pri brisanju podataka, ili kada želimo da se pri sledećem čitanju podatak ponovo učita iz baze.
+```java
+@Service
+public class KorisnikService {
+
+    // Metoda se uvek izvršava, a vraćeni objekat se upisuje u keš pod ključem korisnik.id
+    @CachePut(value = "korisniciCache", key = "#korisnik.id")
+    public Korisnik azurirajKorisnika(Korisnik korisnik) {
+        return korisnikRepository.save(korisnik);
+    }
+
+    // Nakon brisanja iz baze, uklanja se i zapis iz keša za dati ključ
+    @CacheEvict(value = "korisniciCache", key = "#id")
+    public void obrisiKorisnika(Long id) {
+        korisnikRepository.deleteById(id);
+    }
+
+    // Uklanja sve zapise iz keša korisniciCache
+    @CacheEvict(value = "korisniciCache", allEntries = true)
+    public void obrisiSveIzKesa() {
+    }
+}
+```
+
+Ključ u slucaju anotacije `@CachePut` mora biti isti kao kod `@Cacheable` metode, inače se vrednost upisuje pod drugim ključem i čitanje ga neće pronaći.
 
 ## Redis
 
@@ -164,7 +199,7 @@ Time sto koristite **Spring Cache** apstrakciju, prelazak na _Redis_ sa _Ehcache
 
 ## Primeri
 
-U ovim vezbana nacicete dva primera _Spring Boot_ aplikacije. Jedan primer podrzava _Ehcache_, drugi _Redis_. Da bi ste testirali aplikacije, mozete koristiti alat kao sto je _Postman_.
+U ovim vezbana nacicete dva primera _Spring Boot_ aplikacije. Jedan primer podrzava _Ehcache_, drugi _Redis_. Da bi ste testirali aplikacije, mozete koristiti alat kao sto je **_Postman_**.
 
 ### Ehcache primer
 
@@ -187,4 +222,4 @@ Unutar projekta, odnosno unutar koda klase `RedisConfig.java` naći ćete konfig
 
 U servisnoj klasi `ProductServiceImpl.java` naći ćete metode koje primenjuju mehanizam keširanja, zajedno sa proizvoljno dodeljenim ključevima, budući da nije neophodno prethodno ih navesti putem konfiguracije.
 
-Unutar `docker-compose.yml` mozete procitati komentare ostavljene koje su vezane za konfiguraciju servisa.
+Unutar `docker-compose.yml` mozete procitati komentare koji su ostavljeni, a vezani su za konfiguraciju servisa.
