@@ -67,7 +67,9 @@ Ehcache konfigurisete putem XML fajla, odnosno `ehcache.xml`, koji cete smestiti
         </expiry>
         
         <!-- Ograničenje memorije: maksimalno 1000 unosa u On-Heap kešu -->
-        <heap entries="1000">1000</heap>
+        <resources>
+            <heap>1000</heap>
+        </resources>
     </cache>
 
 </config>
@@ -184,3 +186,5 @@ Nakon što se (po potrebi) slika za _Redis_ preuzme i pokrene, možete pokrenuti
 Unutar projekta, odnosno unutar koda klase `RedisConfig.java` naći ćete konfiguraciju _Redis_ keša, kao i definicije _Spring Bean-ova_ koji se koriste za upravljanje kešom.
 
 U servisnoj klasi `ProductServiceImpl.java` naći ćete metode koje primenjuju mehanizam keširanja, zajedno sa proizvoljno dodeljenim ključevima, budući da nije neophodno prethodno ih navesti putem konfiguracije.
+
+Unutar `docker-compose.yml` mozete procitati komentare ostavljene koje su vezane za konfiguraciju servisa.
