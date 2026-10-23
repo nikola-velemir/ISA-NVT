@@ -130,4 +130,4 @@ Bitno je uočiti da se selektovani interval šalje serverskoj aplikaciji u sluč
 
 Kod _Grafana_ prikaza, vrši se upit direktno _Grafana_ servisu (prikaz je omogućen putem ugrađenih panela i `<iframe>` taga.)
 
-Unutar foldera grafana-settings možete analizirati strukturu fajlova koji se tu nalaze. Ovi fajlovi se, zajedno sa `docker-compose.yml`, koriste kako bi se omogućilo automatsko podešavanje i perzistiranje komandnih tabli i panela. Ovaj pristup, takozvani provisioning, vam omogućava da imate konzistentan prikaz i podešavanja, nezavisno od mašine sa koje pokrećete servis.
+Unutar foldera `grafana-settings` možete analizirati strukturu fajlova koji se tu nalaze. Ovi fajlovi se, zajedno sa `docker-compose.yml`, koriste kako bi se omogućilo automatsko podešavanje i perzistiranje komandnih tabli i panela. Ovaj pristup, takozvani provisioning, vam omogućava da imate konzistentan prikaz i podešavanja, nezavisno od mašine sa koje pokrećete servis.
