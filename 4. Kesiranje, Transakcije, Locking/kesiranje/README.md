@@ -22,7 +22,7 @@ Iako nam kesiranje podataka nudi brzi pristup podacima, javljaju se pitanja veza
   
 ## Ehcache
 
-**Ehcache** je open-source alat za keširanje zasnovanih na Java tehnologiji. Naširoko se koristi u Java i Spring aplikacijama zbog svoje jednostavne integracije i fleksibilnosti pri upravljanju memorijom.
+**Ehcache** je open-source alat za keširanje zasnovanih na _Java_ tehnologiji. Naširoko se koristi u _Java_ i _Spring_ aplikacijama zbog svoje jednostavne integracije i fleksibilnosti pri upravljanju memorijom.
 
 Ovaj mehanizam je posrednik između aplikacije i baze podataka: kada aplikacija zatraži podatak, Ehcache prvo proveri da li je taj podatak već skladišten u keš memoriji. Ako jeste, vrati ga instantno; ako nije, podatak se čita iz baze, upisuje u Ehcache i potom vraća aplikaciji za narednu upotrebu.
 
@@ -45,7 +45,7 @@ Ehcache se lako integriše sa _Spring_ i _Spring Boot_ okvirima putem anotacija 
 Ehcache mozete koristi:
 
 * Kada razvijate **Java / Spring** aplikacije koje trpiti veliku količinu čitajućih zahteva.
-* Kada želite brzo keširanje unutar procesa iste aplikacije (*In-Memory Caching*) bez potrebe za podizanjem eksternih keš servera (poput Redis-a ili Memcached-a).
+* Kada želite brzo keširanje unutar procesa iste aplikacije (*In-Memory Caching*) bez potrebe za podizanjem eksternih keš servera (poput _Redis-a_ ili _Memcached-a_).
 * Kada vam je potrebna jednostavna konfiguracija i brza implementacija keširanja sa podrškom za Disk/Off-Heap proširenja.
 
 ---
@@ -90,7 +90,7 @@ Ako se proveri sadrzaj kesa za kljucem `korisniciCache`, metoda servisa nece bit
 
 ## Redis
 
-**Redis** (**_REmote DIctionary Server_**) je izuzetno popularan, _open-source_, _in-memory_ sistem za skladištenje podataka koji se najčešće koristi kao keš baza podataka, broker poruka i keš memorija sa mogućnošću perzistentnosti. Za razliku od Ehcache-a koji je _in-process_ (živi unutar memorije same Java aplikacije), Redis funkcioniše kao zaseban, eksterni server.
+**Redis** (**_REmote DIctionary Server_**) je izuzetno popularan, _open-source_, _in-memory_ sistem za skladištenje podataka koji se najčešće koristi kao keš baza podataka, broker poruka i keš memorija sa mogućnošću perzistentnosti. Za razliku od _Ehcache-a_ koji je _in-process_ (živi unutar memorije same _Java_ aplikacije), _Redis_ funkcioniše kao zaseban, eksterni server.
 
 Ovakav pristup ga čini idealnim za distribuirane sisteme, mikro servise gde više instanci iste aplikacije treba da deli isti keš, kao i za situacije kada je potrebno memorijsko skladište velikog kapaciteta koje je nezavisno od životnog ciklusa jedne aplikacije.
 
@@ -121,7 +121,7 @@ Glavne karakteristike koje odlikuju _Redis_:
 
 ### Primer konfiguracije i upotrebe u Spring Boot-u
 
-Da biste povezali Spring Boot aplikaciju sa Redis-om, najpre ga konfigurišete kroz application.yml (ili application.properties) fajl:
+Da biste povezali _Spring Boot_ aplikaciju sa _Redis-om_, najpre ga konfigurišete kroz `application.yml` (ili `application.properties`) fajl:
 
 ```yml
 spring:
@@ -131,7 +131,7 @@ spring:
       port: 6379
 ```
 
-Zatim, potpuno isto kao kod Ehcache-a, možete koristiti standardne Spring anotacije za keširanje nad vašim servisima:
+Zatim, potpuno isto kao kod Ehcache-a, možete koristiti standardne _Spring_ anotacije za keširanje nad vašim servisima:
 
 ```java
 @Service
