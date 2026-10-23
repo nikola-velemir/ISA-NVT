@@ -4,6 +4,8 @@ Obično zahtevi veb aplikacija specificiraju dobavljanje određenog sadržaja ko
 
 Mehanizmi keširanja služe kako bi se upravo ovi podaci mogli zapamtiti u nekom skladištu koje nije glavna baza podataka. Obično je pristup ovakvom skladištu neverovatno brz, i kompletno eliminiše interakciju sa glavnom bazom podataka. Sadržaj koji često biva tražen, ili sadržaj koji se ne menja često, može biti skladišten u keš memoriji, te je praktično odmah spreman na dobavljanje i prezentaciju korisnicima.
 
+---
+
 Postoji više nacina keširanja podataka:
 
 - **Keširanje na klijentskoj strani**: Sadržaj koji se jako retko menja može ostati u memoriji klijentske aplikacije, čime se uklanja potreba za slanjem zahteva ka serverskoj aplikaciji, osim kad podaci ne zastare ili postanu nevalidni.
@@ -104,6 +106,8 @@ Ako se proveri sadržaj keša `korisniciCache` sa ključem koja je vrednost `id`
 
 **Napomena**: Da bi se vasa POJO klasa smestila u keš memoriju, neophodno je da implementira interfejs `Serializable`.
 
+---
+
 Pored `@Cacheable`, _Spring Cache_ apstrakcija nudi još dve anotacije koje služe da keš ostane usklađen sa bazom podataka:
 
 - `@CachePut` uvek izvršava metodu, a njen rezultat upisuje u keš pod zadatim ključem (prepisuje staru vrednost). Koristi se pri izmeni podataka.
@@ -201,10 +205,13 @@ Time sto koristite **Spring Cache** apstrakciju, prelazak na _Redis_ sa _Ehcache
 
 U ovim vežbama naci ćete dva primera _Spring Boot_ aplikacije. Jedan primer podržava _Ehcache_, drugi _Redis_. Da bi ste testirali aplikacije, možete koristiti alat kao što je **_Postman_**.
 
+---
+
 ### Ehcache primer
 
 U folderu `ehcache-primer` naći ćete primer _Spring Boot_ aplikacije gde se koristi _Ehcache_. Pod folderom `src/main/resources` imate konfiguraciju _Ehcache_. Ova konfiguracija je pokrivena komentarima, te je možete proučiti. U servisnoj klasi `ProductServiceImpl.java` naći ćete metode koje primenjuju mehanizam keširanja, zajedno sa dodeljenim ključevima koji su navedeni u `src/main/resources/ehcache.xml`.
 
+---
 
 ### Redis primer
 
