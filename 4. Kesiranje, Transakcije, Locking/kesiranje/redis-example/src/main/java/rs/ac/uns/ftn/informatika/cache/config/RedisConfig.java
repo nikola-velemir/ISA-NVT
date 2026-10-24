@@ -31,15 +31,17 @@ public class RedisConfig {
 
         // Default cache configuration (15 seconds TTL)
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofSeconds(10))
+                .entryTtl(Duration.ofSeconds(30))
                 .disableCachingNullValues()
                 .serializeValuesWith(jsonSerializer);
 
         // Setup individual cache configurations via a Map (compatible with Spring Data Redis 2.1.x)
         Map<String, RedisCacheConfiguration> initialCacheConfigs = new HashMap<>();
-        initialCacheConfigs.put("productAll", defaultCacheConfig.entryTtl(Duration.ofSeconds(10)));
-        initialCacheConfigs.put("productByName", defaultCacheConfig.entryTtl(Duration.ofSeconds(10)));
-        initialCacheConfigs.put("productById", defaultCacheConfig.entryTtl(Duration.ofSeconds(10 )));
+        initialCacheConfigs.put("productAll", defaultCacheConfig.entryTtl(Duration.ofSeconds(45)));
+        initialCacheConfigs.put("productByName", defaultCacheConfig.entryTtl(Duration.ofSeconds(45)));
+        initialCacheConfigs.put("productById", defaultCacheConfig.entryTtl(Duration.ofSeconds(45 )));
+        initialCacheConfigs.put("byNameMatch", defaultCacheConfig.entryTtl(Duration.ofSeconds(45 )));
+        initialCacheConfigs.put("byParamMatch", defaultCacheConfig.entryTtl(Duration.ofSeconds(45 )));
 
         // Build the RedisCacheManager
         return RedisCacheManager.builder(redisConnectionFactory)

@@ -15,6 +15,8 @@ import rs.ac.uns.ftn.informatika.cache.repository.ProductNamedQueryRepositoryExa
 import rs.ac.uns.ftn.informatika.cache.repository.ProductQueryRepositoryExample;
 import rs.ac.uns.ftn.informatika.cache.repository.ProductRepository;
 
+import javax.persistence.EntityNotFoundException;
+
 @Service
 public class ProductServiceImpl implements ProductService {
 
@@ -71,5 +73,15 @@ public class ProductServiceImpl implements ProductService {
     public void removeFromCache() {
         LOG.info("Products removed from cache!");
 
+    }
+
+    @Override
+    public Product updateProduct(Long id, Product newProduct) {
+        Product product = productRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        product.setName(newProduct.getName());
+        product.setOrigin(newProduct.getOrigin());
+        product.setPrice(newProduct.getPrice());
+        productRepository.save(product);
+        return product;
     }
 }
