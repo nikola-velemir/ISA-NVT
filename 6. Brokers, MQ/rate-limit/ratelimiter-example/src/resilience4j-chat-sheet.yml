@@ -1,0 +1,466 @@
+# =============================================================================
+# RESILIENCE4J - COMPLETE SPRING BOOT CONFIGURATION REFERENCE
+# =============================================================================
+# Dependencies (Maven artifacts):
+#   io.github.resilience4j:resilience4j-spring-boot3   (use ...-spring-boot2 for Boot 2.x)
+#   org.springframework.boot:spring-boot-starter-aop    (REQUIRED for annotations)
+#   org.springframework.boot:spring-boot-starter-actuator (health, metrics, endpoints)
+#
+# Structure of every module:
+#   resilience4j.<module>.configs.<configName>   -> reusable templates
+#   resilience4j.<module>.instances.<name>       -> concrete instances; used as
+#                                                   @CircuitBreaker(name = "<name>") etc.
+#   An instance can inherit a template with `baseConfig: <configName>` and then
+#   override only the properties that differ. A config named "default" is applied
+#   automatically to instances that don't specify baseConfig.
+#
+# Durations use Spring Duration format: 500ms, 5s, 2m, or ISO-8601 (PT5S).
+# Defaults listed are the library defaults (Resilience4j 2.x).
+# NOTE: A few properties were added in newer 2.x releases; if your version
+# rejects one, check the release notes for the version you use.
+# =============================================================================
+
+
+# =============================================================================
+# 1. CIRCUIT BREAKER
+# Use case: stop calling a failing/slow downstream (payment API, other microservice)
+# so you fail fast, avoid piling up threads, and give the remote system time to
+# recover. States: CLOSED (normal) -> OPEN (rejecting calls, throws
+# CallNotPermittedException) -> HALF_OPEN (trial calls) -> CLOSED or OPEN again.
+# =============================================================================
+resilience4j.circuitbreaker:
+
+  configs:
+    default:
+      # Registers a Spring Actuator HealthIndicator for each instance using this config.
+      # Use case: show breaker state in /actuator/health, for k8s/monitoring dashboards.
+      # Default: false
+      registerHealthIndicator: true
+
+      # If true, an OPEN breaker makes the health status DOWN (and so the whole app's
+      # health). Use case: rarely wanted - a broken downstream usually shouldn't make
+      # your pod get killed by a liveness probe. Default: false
+      allowHealthIndicatorToFail: false
+
+      # How outcomes of calls are recorded.
+      #   COUNT_BASED: looks at the last N calls (N = slidingWindowSize)
+      #   TIME_BASED : looks at all calls in the last N seconds (N = slidingWindowSize)
+      # Use case: COUNT_BASED for steady traffic; TIME_BASED for bursty/variable traffic
+      # so old calls from a quiet period don't distort the rate. Default: COUNT_BASED
+      slidingWindowType: COUNT_BASED
+
+      # Size of the sliding window: number of calls (COUNT_BASED) or seconds (TIME_BASED).
+      # Larger = smoother, slower to react. Smaller = reacts quickly, more jittery.
+      # Default: 100
+      slidingWindowSize: 10
+
+      # Minimum calls needed in the window before failure/slow rate is evaluated.
+      # Use case: prevents opening the breaker after 1 failure out of 1 call (=100%)
+      # at startup or low traffic. Default: 100
+      minimumNumberOfCalls: 5
+
+      # Failure rate % at or above which the breaker transitions to OPEN.
+      # Default: 50
+      failureRateThreshold: 50
+
+      # Slow-call rate % at or above which the breaker transitions to OPEN.
+      # Use case: protect against a downstream that is not failing but is degrading
+      # (latency creeping up) and would exhaust your threads. 100 = effectively disabled.
+      # Default: 100
+      slowCallRateThreshold: 100
+
+      # A call longer than this is counted as "slow". Use case: set to your SLA
+      # for the downstream (e.g. 2s). Default: 60s
+      slowCallDurationThreshold: 2s
+
+      # Number of trial calls allowed while HALF_OPEN. Their results decide whether
+      # the breaker closes again or goes back to OPEN. Default: 10
+      permittedNumberOfCallsInHalfOpenState: 3
+
+      # Max time to stay HALF_OPEN waiting for the permitted trial calls to be made.
+      # 0 = wait indefinitely until all permitted calls have been made.
+      # Use case: set non-zero so the breaker can't sit in HALF_OPEN forever on
+      # low-traffic paths. Default: 0
+      maxWaitDurationInHalfOpenState: 0s
+
+      # Time the breaker stays OPEN before allowing trial calls (HALF_OPEN).
+      # Use case: tune to the typical recovery time of the downstream. Default: 60s
+      waitDurationInOpenState: 10s
+
+      # true: breaker moves OPEN->HALF_OPEN automatically after waitDurationInOpenState
+      #       (a background thread does it).
+      # false: moves to HALF_OPEN only when the next call arrives after the wait time.
+      # Default: false
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+
+      # Exceptions counted as FAILURES. If set, ONLY these (and subclasses) count as
+      # failures; everything else counts as success. Default: empty (all Throwables
+      # count as failures, except those in ignoreExceptions).
+      recordExceptions:
+        - java.io.IOException
+        - java.util.concurrent.TimeoutException
+        - org.springframework.web.client.HttpServerErrorException
+        - org.springframework.web.client.ResourceAccessException
+
+      # Exceptions that are neither failure nor success (ignored in the rate calc).
+      # Use case: business exceptions (validation, 404, "insufficient funds") that
+      # say nothing about downstream health. Takes priority over recordExceptions.
+      ignoreExceptions:
+        - com.example.exception.BusinessException
+        - org.springframework.web.client.HttpClientErrorException
+
+      # Custom class (implements java.util.function.Predicate<Throwable>) deciding
+      # whether an exception is a failure. Use case: logic you can't express by type,
+      # e.g. "HTTP 503 or 429 only". Overrides recordExceptions/ignoreExceptions.
+      # recordFailurePredicate: com.example.resilience.RecordFailurePredicate
+
+      # Custom Predicate<Throwable> that marks exceptions to be ignored.
+      # ignoreExceptionPredicate: com.example.resilience.IgnoreExceptionPredicate
+
+      # Custom Predicate<Object> deciding from the RETURN VALUE whether it's a failure.
+      # Use case: downstream returns HTTP 200 with {"status":"ERROR"} or a Response
+      # object with a failure flag instead of throwing.
+      # recordResultPredicate: com.example.resilience.RecordResultPredicate
+
+      # Size of the ring buffer that stores events for /actuator/circuitbreakerevents.
+      # Default: 10
+      eventConsumerBufferSize: 20
+
+      # false = exceptions CallNotPermittedException etc. are thrown without a stack
+      # trace (cheaper, less log noise). Default: true
+      writableStackTraceEnabled: false
+
+    # A second template to show inheritance
+    sensitive:
+      # Inherit everything from "default" and override.
+      baseConfig: default
+      failureRateThreshold: 20
+      waitDurationInOpenState: 60s
+
+  instances:
+    paymentService:
+      # Uses default config automatically; usage: @CircuitBreaker(name = "paymentService",
+      # fallbackMethod = "paymentFallback")
+      baseConfig: default
+      # Any property from above can be overridden here:
+      failureRateThreshold: 40
+    inventoryService:
+      baseConfig: sensitive
+      slidingWindowType: TIME_BASED
+      slidingWindowSize: 30     # = last 30 seconds
+
+  # Enable/disable Micrometer metrics for circuit breakers. Default: true
+  metrics:
+    enabled: true
+    legacy:
+      enabled: false
+
+  # Order of the AOP advice relative to other aspects. LOWER value = OUTER layer.
+  # Default order (outermost -> innermost): Retry, CircuitBreaker, RateLimiter,
+  # TimeLimiter, Bulkhead. Use case: swap if e.g. you want CircuitBreaker outside Retry
+  # so that a whole retry sequence counts as one call.
+  # circuitBreakerAspectOrder: 2
+
+
+# =============================================================================
+# 2. RETRY
+# Use case: transient errors (network blips, 503, deadlock, optimistic locking
+# failures). Only retry IDEMPOTENT operations!
+# =============================================================================
+resilience4j.retry:
+
+  configs:
+    default:
+      # Total number of attempts INCLUDING the first call. Default: 3
+      maxAttempts: 3
+
+      # Fixed wait between attempts. Default: 500ms
+      waitDuration: 500ms
+
+      # Multiplies the wait on each retry (needs enableExponentialBackoff).
+      # Use case: back off progressively so you don't hammer a struggling service.
+      enableExponentialBackoff: true
+
+      # Multiplier for exponential backoff: wait_n = waitDuration * multiplier^(n-1).
+      # Default: 1.5
+      exponentialBackoffMultiplier: 2
+
+      # Upper cap on the exponentially growing wait. Default: no cap
+      exponentialMaxWaitDuration: 10s
+
+      # Adds randomness (jitter) to the wait. Use case: prevent a "thundering herd"
+      # where many clients retry at the exact same instant.
+      enableRandomizedWait: true
+
+      # Jitter factor (0..1). Actual wait = wait +/- wait*factor. Default: 0.5
+      randomizedWaitFactor: 0.5
+
+      # Custom IntervalFunction class (full control of the wait algorithm).
+      # Mutually exclusive with waitDuration/backoff options.
+      # intervalFunction: com.example.resilience.MyIntervalFunction
+
+      # Exceptions that trigger a retry. If set, only these (and subclasses) are
+      # retried. Default: empty (all exceptions retried except ignoreExceptions)
+      retryExceptions:
+        - java.io.IOException
+        - java.util.concurrent.TimeoutException
+        - org.springframework.web.client.HttpServerErrorException
+
+      # Exceptions that are NEVER retried (takes priority over retryExceptions).
+      # Use case: 4xx errors, validation errors - retrying can't fix those.
+      ignoreExceptions:
+        - com.example.exception.BusinessException
+        - org.springframework.web.client.HttpClientErrorException
+
+      # Custom Predicate<Throwable> deciding if an exception should be retried.
+      # retryExceptionPredicate: com.example.resilience.RetryExceptionPredicate
+
+      # Custom Predicate<Object> deciding from the RESULT whether to retry.
+      # Use case: HTTP 200 with an "in progress / try again" body, empty result.
+      # resultPredicate: com.example.resilience.RetryOnResultPredicate
+
+      # When retries are exhausted because the RESULT predicate keeps matching:
+      #   true  -> throw MaxRetriesExceededException
+      #   false -> return the last result as is. Default: false
+      failAfterMaxAttempts: false
+
+      # Buffer size for events (/actuator/retryevents). Default: 100
+      eventConsumerBufferSize: 50
+
+      # Drops the stack trace of Retry's own exceptions (MaxRetriesExceededException).
+      # Default: true
+      writableStackTraceEnabled: true
+
+  instances:
+    paymentService:
+      baseConfig: default
+      maxAttempts: 4
+    backendB:
+      baseConfig: default
+      enableExponentialBackoff: false
+      waitDuration: 1s
+
+  # Enable Retry metrics. Default: true
+  metrics:
+    enabled: true
+    legacy:
+      enabled: false
+
+  # retryAspectOrder: 1   # lower = outer layer (Retry is the outermost by default)
+
+
+# =============================================================================
+# 3. RATE LIMITER
+# Use case: cap calls per time window - to respect a third-party API quota
+# ("100 req/s"), protect your own endpoints from abuse, fair usage per tenant.
+# Works per JVM instance (not distributed).
+# =============================================================================
+resilience4j.ratelimiter:
+
+  configs:
+    default:
+      # Registers a health indicator for each instance. Default: false
+      registerHealthIndicator: false
+
+      # Permissions (calls) allowed per refresh period. Default: 50
+      limitForPeriod: 10
+
+      # Length of one period; after it, permissions are reset to limitForPeriod.
+      # Default: 500ns
+      limitRefreshPeriod: 1s
+
+      # How long a thread waits for a permission when none are left before
+      # RequestNotPermitted is thrown. 0 = fail immediately (no queueing).
+      # Use case: >0 smooths bursts; 0 sheds load instantly. Default: 5s
+      timeoutDuration: 0s
+
+      # Allow health indicator to make health DOWN when limiter is exhausted.
+      # Default: false
+      allowHealthIndicatorToFail: false
+
+      # Event buffer size (/actuator/ratelimiterevents). Default: 100
+      eventConsumerBufferSize: 50
+
+      # Whether to subscribe to events. Default: true
+      subscribeForEvents: true
+
+      # Skip stack trace on RequestNotPermitted. Default: true
+      writableStackTraceEnabled: true
+
+  instances:
+    externalApi:
+      baseConfig: default
+      limitForPeriod: 100
+      limitRefreshPeriod: 1s
+    loginEndpoint:
+      limitForPeriod: 5
+      limitRefreshPeriod: 1m
+      timeoutDuration: 0s
+
+  # rateLimiterAspectOrder: 3
+  metrics:
+    enabled: true
+
+
+# =============================================================================
+# 4. BULKHEAD (SEMAPHORE-BASED)
+# Use case: limit the number of CONCURRENT calls to one dependency, so a slow
+# dependency can't consume all your Tomcat/request threads. Runs on the caller's
+# thread; works with sync code.
+# =============================================================================
+resilience4j.bulkhead:
+
+  configs:
+    default:
+      # Max parallel executions allowed. Default: 25
+      maxConcurrentCalls: 10
+
+      # How long a call waits for a free slot before BulkheadFullException.
+      # 0 = reject immediately. Default: 0
+      maxWaitDuration: 100ms
+
+      # Event buffer size (/actuator/bulkheadevents). Default: 100
+      eventConsumerBufferSize: 50
+
+      # Skip stack trace on BulkheadFullException. Default: true
+      writableStackTraceEnabled: true
+
+  instances:
+    reportService:
+      baseConfig: default
+      maxConcurrentCalls: 5
+
+  # bulkheadAspectOrder: 5
+  metrics:
+    enabled: true
+
+
+# =============================================================================
+# 5. THREAD POOL BULKHEAD
+# Use case: run the call on a SEPARATE, bounded thread pool (strong isolation,
+# handy for blocking IO). Annotate with
+#   @Bulkhead(name="x", type = Bulkhead.Type.THREADPOOL)
+# The method must return CompletableFuture.
+# =============================================================================
+resilience4j.thread-pool-bulkhead:
+
+  configs:
+    default:
+      # Maximum threads in the pool. Default: Runtime.availableProcessors()
+      maxThreadPoolSize: 4
+
+      # Core (always-kept) threads. Default: availableProcessors() - 1
+      coreThreadPoolSize: 2
+
+      # Capacity of the queue for tasks waiting for a free thread. When pool + queue
+      # are full -> BulkheadFullException. Default: 100
+      queueCapacity: 20
+
+      # How long idle threads above core size live before being killed. Default: 20ms
+      keepAliveDuration: 20ms
+
+      # Whether to keep stack trace on BulkheadFullException. Default: true
+      writableStackTraceEnabled: true
+
+      # Classes implementing ContextPropagator, to copy ThreadLocal data
+      # (MDC logging context, security context, tenant ID) to the pool thread.
+      # contextPropagators:
+      #   - com.example.resilience.MdcContextPropagator
+
+      # Event buffer size. Default: 100
+      eventConsumerBufferSize: 50
+
+  instances:
+    legacyBlockingService:
+      baseConfig: default
+      maxThreadPoolSize: 8
+
+  metrics:
+    enabled: true
+
+
+# =============================================================================
+# 6. TIME LIMITER
+# Use case: bound how long you wait for an async call (CompletableFuture / reactive
+# type) so a hanging downstream doesn't block you forever. For sync code use
+# client timeouts (RestTemplate/WebClient) instead; TimeLimiter needs a Future.
+# =============================================================================
+resilience4j.timelimiter:
+
+  configs:
+    default:
+      # Max time to wait for the result before TimeoutException. Default: 1s
+      timeoutDuration: 3s
+
+      # If true, cancel the underlying Future on timeout (interrupts the task).
+      # Use case: free resources; set false if the work must complete anyway
+      # (fire-and-forget side effects). Default: true
+      cancelRunningFuture: true
+
+      # Event buffer size (/actuator/timelimiterevents). Default: 100
+      eventConsumerBufferSize: 50
+
+  instances:
+    asyncReport:
+      baseConfig: default
+      timeoutDuration: 10s
+
+  # timeLimiterAspectOrder: 4
+  metrics:
+    enabled: true
+
+
+# =============================================================================
+# 7. ACTUATOR / SPRING INTEGRATION (outside the resilience4j.* tree)
+# =============================================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        # Exposes breaker/retry/limiter state and events over HTTP:
+        #   /actuator/circuitbreakers, /actuator/circuitbreakerevents,
+        #   /actuator/retries, /actuator/retryevents,
+        #   /actuator/ratelimiters, /actuator/ratelimiterevents,
+        #   /actuator/bulkheads, /actuator/bulkheadevents,
+        #   /actuator/timelimiters, /actuator/timelimiterevents
+        include: health,metrics,prometheus,circuitbreakers,circuitbreakerevents,retries,retryevents,ratelimiters,ratelimiterevents,bulkheads,bulkheadevents,timelimiters,timelimiterevents
+  endpoint:
+    health:
+      show-details: always
+  health:
+    # Turn the health indicators of each module on (they must also be registered
+    # per instance through registerHealthIndicator: true).
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+  # Micrometer: lets Prometheus scrape resilience4j_* metrics
+  metrics:
+    distribution:
+      percentiles-histogram:
+        resilience4j.circuitbreaker.calls: true
+
+
+# =============================================================================
+# USAGE CHEAT SHEET (Java side)
+# =============================================================================
+# @CircuitBreaker(name = "paymentService", fallbackMethod = "fallback")
+# @Retry(name = "paymentService")
+# @RateLimiter(name = "externalApi")
+# @Bulkhead(name = "reportService")                                    // semaphore
+# @Bulkhead(name = "legacyBlockingService", type = Bulkhead.Type.THREADPOOL)
+# @TimeLimiter(name = "asyncReport")                                   // returns CompletableFuture
+#
+# Default execution order (outer -> inner):
+#   Retry ( CircuitBreaker ( RateLimiter ( TimeLimiter ( Bulkhead ( method ) ) ) ) )
+#
+# Fallback signature: same return type and params as the original + an extra
+# Throwable/Exception param as the last one, e.g.
+#   String fallback(String id, Exception ex)
+# You can create overloads per exception type; the most specific one wins.
+#
+# Gotchas:
+#   - Annotations work only on calls from ANOTHER bean (Spring AOP proxy);
+#     self-invocation within the same class is not intercepted.
+#   - Retry on non-idempotent operations can duplicate side effects.
+#   - Rate limiter and bulkhead are per JVM instance, not cluster-wide.
