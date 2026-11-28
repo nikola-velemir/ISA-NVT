@@ -104,3 +104,5 @@ Daleko vise informativnu statistiku i prikaz izvrsavanja _load test-a_ imate pod
 ![charts](./README/images/charts.png)
 
 _Load test_ mozete zaustaviti putem kontrole `"Stop"` u gornjem desnom uglu veb interfejsa, ili mozete prekinuti _Locust_ proces u terminalu.
+
+**Sretno testiranje opterećenja `:)`**

@@ -30,7 +30,7 @@ class ProductUser(HttpUser):
             name="/api/products/byName [name]",
         )
 
-    @task
+    # @task
     def by_name_all_known(self):
         for name in self.names[:5]:
             self.client.get(
@@ -41,7 +41,7 @@ class ProductUser(HttpUser):
 
     # ---------- /api/products/byPriceRange ----------
 
-    @task
+    # @task
     def by_price_range_random(self):
         lower = round(random.uniform(0, 500), 2)
         upper = round(lower + random.uniform(0, 1000), 2)
